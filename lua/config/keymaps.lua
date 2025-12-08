@@ -31,17 +31,29 @@ vim.keymap.set("i", "<Tab>", function()
     end
   elseif vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
     return "<Tab>"
-  elseif has_words_before() then
-    return "<C-n>"
   else
-    return "<Tab>"
+    -- Check if we have LSP/completion candidates first
+    local cmp_available, cmp = pcall(require, "cmp")
+    local copilot_suggestion = pcall(require, "copilot.suggestion")
+    local has_suggestions = copilot_suggestion and require("copilot.suggestion").is_visible()
+    
+    if cmp_available and cmp.visible() then
+      return cmp.select_next_item()
+    elseif has_words_before() then
+      return "<C-n>"
+    else
+      return "<Tab>"
+    end
   end
 end, { expr = true, desc = "Tab completion for Copilot/LSP" })
 
 vim.keymap.set("i", "<S-Tab>", function()
+  local cmp_available, cmp = pcall(require, "cmp")
   local ok, suggestion = pcall(require, "copilot.suggestion")
   if ok and suggestion.is_visible() then
     return suggestion.accept_prev()
+  elseif cmp_available and cmp.visible() then
+    return cmp.select_prev_item()
   else
     return "<C-p>"
   end

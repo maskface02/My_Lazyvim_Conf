@@ -4,7 +4,7 @@ return {
     "github/copilot.vim",
     config = function()
       -- Configure Copilot to auto-start and handle authentication
-      vim.g.copilot_no_tab_map = true
+      vim.g.copilot_no_tab_map = false  -- Enable Tab mapping for Copilot
       vim.g.copilot_assume_mapped = true
       vim.g.copilot_tab_fallback = ""
       

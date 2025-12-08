@@ -42,7 +42,9 @@ vim.keymap.set("i", "<Tab>", function()
     elseif has_words_before() then
       return "<C-n>"
     else
-      return "<Tab>"
+      -- Trigger the default tab behavior by calling the built-in function
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "n", false)
+      return ""
     end
   end
 end, { expr = true, desc = "Tab completion for Copilot/LSP" })
@@ -55,7 +57,9 @@ vim.keymap.set("i", "<S-Tab>", function()
   elseif cmp_available and cmp.visible() then
     return cmp.select_prev_item()
   else
-    return "<C-p>"
+    -- Trigger the default Shift+Tab behavior by calling the built-in function
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<S-Tab>", true, true, true), "n", false)
+    return ""
   end
 end, { expr = true, desc = "Previous item in Copilot/LSP completion" })
 

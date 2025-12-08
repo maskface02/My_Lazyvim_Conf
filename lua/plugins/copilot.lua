@@ -76,11 +76,12 @@ return {
       -- Setup CopilotChat with vertical split layout for chat window
       require("CopilotChat").setup({
         window = {
-          layout = 'split',   -- Use 'split' layout for side-by-side view
-          width = 0.4,        -- 40% of screen width for chat
-          height = 0.8,       -- 80% of screen height
-          direction = 'right', -- Open chat on the right side (like vsplit)
+          layout = 'vertical',
+          width = 40,           -- Fixed width for vertical split
+          height = 0.8,         -- 80% of screen height
+          direction = 'right',  -- Open chat on the right side (like vsplit)
           border = 'rounded',
+          title = 'Copilot Chat',
         },
         debug = true, -- optional: helps with tracing errors
       })

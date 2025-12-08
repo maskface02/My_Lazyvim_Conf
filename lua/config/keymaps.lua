@@ -38,3 +38,10 @@ vim.keymap.set("i", "<S-Tab>", function()
     return "<C-p>"
   end
 end, { expr = true, desc = "Previous item in Copilot/LSP completion" })
+
+vim.keymap.set("i", "<C-e>", function()
+  if require("copilot.suggestion").is_visible() then
+    require("copilot.suggestion").dismiss()
+  end
+  return "<C-e>"
+end, { expr = true, desc = "Dismiss Copilot suggestion" })

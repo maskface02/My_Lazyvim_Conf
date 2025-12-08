@@ -27,8 +27,8 @@ echo "After authentication, the Copilot plugins in Neovim will work properly."
 if [ -f "/workspace/lua/plugins/copilot.lua" ]; then
     echo ""
     echo "✓ Copilot plugin configuration found at /workspace/lua/plugins/copilot.lua"
-    echo "  - Copilot Chat window is configured to open in a new tab"
-    echo "  - Keymap <leader>cc opens Copilot Chat in new tab"
+    echo "  - Copilot Chat window is configured to open in a new buffer (replacing current buffer)"
+    echo "  - Keymap <leader>cc opens Copilot Chat in new buffer"
     echo "  - Keymap <leader>cr for general corrections"
     echo "  - Alt+Up/Down arrow keys move lines up/down"
 else

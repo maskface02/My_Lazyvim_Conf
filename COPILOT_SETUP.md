@@ -28,8 +28,8 @@ gh copilot auth
 ## Configuration Changes Made
 
 ### Copilot Chat Window Layout
-- Changed from floating window to tab layout (`layout = "tab"`)
-- New keymap: `<leader>cc` opens Copilot Chat in a new tab
+- Changed from floating window to replace layout (`layout = "replace"`) to open in a new buffer
+- New keymap: `<leader>cc` opens Copilot Chat in a new buffer (replacing current buffer)
 - Added correction keymap: `<leader>cr` for general corrections
 
 ### New Keymaps

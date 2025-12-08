@@ -73,12 +73,13 @@ return {
       { "MunifTanjim/nui.nvim" },
     },
     config = function()
-      -- Setup CopilotChat with tab layout for chat window
+      -- Setup CopilotChat with vertical split layout for chat window
       require("CopilotChat").setup({
         window = {
-          layout = 'replace', -- Use 'replace' layout to open in a new buffer (similar to a tab)
-          width = 0.5,        -- 50% of screen width
+          layout = 'split',   -- Use 'split' layout for side-by-side view
+          width = 0.4,        -- 40% of screen width for chat
           height = 0.8,       -- 80% of screen height
+          direction = 'right', -- Open chat on the right side (like vsplit)
           border = 'rounded',
         },
         debug = true, -- optional: helps with tracing errors
@@ -87,7 +88,7 @@ return {
       -- Keymaps
       vim.keymap.set("n", "<leader>cc", function()
         require("CopilotChat").open()
-      end, { desc = "Open Copilot Chat in new buffer" })
+      end, { desc = "Open Copilot Chat in vertical split" })
 
       vim.keymap.set("v", "<leader>cx", function()
         require("CopilotChat").explain()

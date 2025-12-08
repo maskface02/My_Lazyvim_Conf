@@ -1,151 +1,215 @@
-let s:asciiart = [
-			\"        :::      ::::::::",
-			\"      :+:      :+:    :+:",
-			\"    +:+ +:+         +:+  ",
-			\"  +#+  +:+       +#+     ",
-			\"+#+#+#+#+#+   +#+        ",
-			\"     #+#    #+#          ",
-			\"    ###   ########.fr    "
-			\]
+-- 42 Header Plugin for Neovim
+local M = {}
 
-let s:start		= '/*'
-let s:end		= '*/'
-let s:fill		= '*'
-let s:length	= 80
-let s:margin	= 5
+-- ASCII art for 42 header
+local ascii_art = {
+    "        :::      ::::::::",
+    "      :+:      :+:    :+:",
+    "    +:+ +:+         +:+  ",
+    "  +#+  +:+       +#+     ",
+    "+#+#+#+#+#+   +#+        ",
+    "     #+#    #+#          ",
+    "    ###   ########.fr    "
+}
 
-let s:types		= {
-			\'\.c$\|\.h$\|\.cc$\|\.hh$\|\.cpp$\|\.hpp$\|\.tpp$\|\.ipp$\|\.cxx$\|\.go$\|\.rs$\|\.php$\|\.py$\|\.java$\|\.kt$\|\.kts$':
-			\['/*', '*/', '*'],
-			\'\.htm$\|\.html$\|\.xml$':
-			\['<!--', '-->', '*'],
-			\'\.js$\|\.ts$':
-			\['//', '//', '*'],
-			\'\.tex$':
-			\['%', '%', '*'],
-			\'\.ml$\|\.mli$\|\.mll$\|\.mly$':
-			\['(*', '*)', '*'],
-			\'\.vim$\|\vimrc$':
-			\['"', '"', '*'],
-			\'\.el$\|\emacs$\|\.asm$':
-			\[';', ';', '*'],
-			\'\.f90$\|\.f95$\|\.f03$\|\.f$\|\.for$':
-			\['!', '!', '/'],
-			\'\.lua$':
-			\['--', '--', '-']
-			\}
+-- Default settings
+local start_comment = '/*'
+local end_comment = '*/'
+local fill_char = '*'
+local header_length = 80
+local margin_size = 5
 
-function! s:filetype()
-	let l:f = s:filename()
+-- File type mappings
+local file_types = {
+    ['.c$'] = {'/*', '*/', '*'},
+    ['.h$'] = {'/*', '*/', '*'},
+    ['.cc$'] = {'/*', '*/', '*'},
+    ['.cpp$'] = {'/*', '*/', '*'},
+    ['.hpp$'] = {'/*', '*/', '*'},
+    ['.go$'] = {'/*', '*/', '*'},
+    ['.rs$'] = {'/*', '*/', '*'},
+    ['.php$'] = {'/*', '*/', '*'},
+    ['.java$'] = {'/*', '*/', '*'},
+    ['.kt$'] = {'/*', '*/', '*'},
+    ['.kts$'] = {'/*', '*/', '*'},
+    ['.htm$'] = {'<!--', '-->', '*'},
+    ['.html$'] = {'<!--', '-->', '*'},
+    ['.xml$'] = {'<!--', '-->', '*'},
+    ['.js$'] = {'//', '//', '*'},
+    ['.ts$'] = {'//', '//', '*'},
+    ['.tex$'] = {'%', '%', '*'},
+    ['.ml$'] = {'(*', '*)', '*'},
+    ['.mli$'] = {'(*', '*)', '*'},
+    ['.mll$'] = {'(*', '*)', '*'},
+    ['.mly$'] = {'(*', '*)', '*'},
+    ['.vim$'] = {'"', '"', '*'},
+    ['vimrc$'] = {'"', '"', '*'},
+    ['.el$'] = {';', ';', '*'},
+    ['.emacs$'] = {';', ';', '*'},
+    ['.asm$'] = {';', ';', '*'},
+    ['.f90$'] = {'!', '!', '/'},
+    ['.f95$'] = {'!', '!', '/'},
+    ['.f03$'] = {'!', '!', '/'},
+    ['.f$'] = {'!', '!', '/'},
+    ['.for$'] = {'!', '!', '/'},
+    ['.lua$'] = {'--', '--', '-'},
+    ['.py$'] = {'#', '#', '*'},
+    ['.sh$'] = {'#', '#', '*'},
+}
 
-	let s:start	= '#'
-	let s:end	= '#'
-	let s:fill	= '*'
+-- Function to get current user
+local function get_user()
+    local user = os.getenv('USER') or 'marvin'
+    return user
+end
 
-	for type in keys(s:types)
-		if l:f =~ type
-			let s:start	= s:types[type][0]
-			let s:end	= s:types[type][1]
-			let s:fill	= s:types[type][2]
-		endif
-	endfor
+-- Function to get current email
+local function get_email()
+    local email = os.getenv('EMAIL') or 'marvin@42.fr'
+    return email
+end
 
-endfunction
+-- Function to get current filename
+local function get_filename()
+    local filename = vim.fn.expand('%:t')
+    if filename == '' then
+        filename = '< new >'
+    end
+    return filename
+end
 
-function! s:ascii(n)
-	return s:asciiart[a:n - 3]
-endfunction
+-- Function to get current date
+local function get_date()
+    return os.date('%Y/%m/%d %H:%M:%S')
+end
 
-function! s:textline(left, right)
-	let l:left = strpart(a:left, 0, s:length - s:margin * 2 - strlen(a:right))
+-- Function to determine file type and set appropriate comment style
+local function set_file_type()
+    local filename = vim.fn.expand('%:t')
+    local extension = vim.fn.expand('%:e')
+    
+    if extension ~= '' then
+        extension = '.' .. extension
+    end
+    
+    for pattern, values in pairs(file_types) do
+        if string.match(filename, pattern) or string.match(extension, pattern) then
+            start_comment = values[1]
+            end_comment = values[2]
+            fill_char = values[3]
+            break
+        end
+    end
+end
 
-	return s:start . repeat(' ', s:margin - strlen(s:start)) . l:left . repeat(' ', s:length - s:margin * 2 - strlen(l:left) - strlen(a:right)) . a:right . repeat(' ', s:margin - strlen(s:end)) . s:end
-endfunction
+-- Function to get ASCII art line
+local function get_ascii_line(n)
+    local index = n - 3
+    if index >= 1 and index <= #ascii_art then
+        return ascii_art[index]
+    else
+        return ''
+    end
+end
 
-function! s:line(n)
-	if a:n == 1 || a:n == 11 " top and bottom line
-		return s:start . ' ' . repeat(s:fill, s:length - strlen(s:start) - strlen(s:end) - 2) . ' ' . s:end
-	elseif a:n == 2 || a:n == 10 " blank line
-		return s:textline('', '')
-	elseif a:n == 3 || a:n == 5 || a:n == 7 " empty with ascii
-		return s:textline('', s:ascii(a:n))
-	elseif a:n == 4 " filename
-		return s:textline(s:filename(), s:ascii(a:n))
-	elseif a:n == 6 " author
-		return s:textline("By: " . s:user() . " <" . s:mail() . ">", s:ascii(a:n))
-	elseif a:n == 8 " created
-		return s:textline("Created: " . s:date() . " by " . s:user(), s:ascii(a:n))
-	elseif a:n == 9 " updated
-		return s:textline("Updated: " . s:date() . " by " . s:user(), s:ascii(a:n))
-	endif
-endfunction
+-- Function to create a text line for the header
+local function create_text_line(left, right)
+    local left_part = string.sub(left, 1, header_length - margin_size * 2 - string.len(right or ''))
+    local right_part = right or ''
+    
+    local padding = header_length - margin_size * 2 - string.len(left_part) - string.len(right_part)
+    if padding < 0 then
+        padding = 0
+    end
+    
+    local result = start_comment .. string.rep(' ', margin_size - string.len(start_comment)) .. left_part 
+        .. string.rep(' ', padding) .. right_part 
+        .. string.rep(' ', margin_size - string.len(end_comment)) .. end_comment
+    
+    return result
+end
 
-function! s:user()
-	if exists('g:user42')
-		return g:user42
-	endif
-	let l:user = $USER
-	if strlen(l:user) == 0
-		let l:user = "marvin"
-	endif
-	return l:user
-endfunction
+-- Function to create a line of the header
+local function create_header_line(n)
+    if n == 1 or n == 11 then  -- top and bottom line
+        return start_comment .. ' ' .. string.rep(fill_char, header_length - string.len(start_comment) - string.len(end_comment) - 2) .. ' ' .. end_comment
+    elseif n == 2 or n == 10 then  -- blank line
+        return create_text_line('', '')
+    elseif n == 3 or n == 5 or n == 7 then  -- empty with ascii
+        return create_text_line('', get_ascii_line(n))
+    elseif n == 4 then  -- filename
+        return create_text_line(get_filename(), get_ascii_line(n))
+    elseif n == 6 then  -- author
+        return create_text_line('By: ' .. get_user() .. ' <' .. get_email() .. '>', get_ascii_line(n))
+    elseif n == 8 then  -- created
+        return create_text_line('Created: ' .. get_date() .. ' by ' .. get_user(), get_ascii_line(n))
+    elseif n == 9 then  -- updated
+        return create_text_line('Updated: ' .. get_date() .. ' by ' .. get_user(), get_ascii_line(n))
+    end
+end
 
-function! s:mail()
-	if exists('g:mail42')
-		return g:mail42
-	endif
-	let l:mail = $MAIL
-	if strlen(l:mail) == 0
-		let l:mail = "marvin@42.fr"
-	endif
-	return l:mail
-endfunction
+-- Function to insert the header
+local function insert_header()
+    set_file_type()
+    
+    -- Create the header lines
+    local header_lines = {}
+    for n = 1, 11 do
+        table.insert(header_lines, create_header_line(n))
+    end
+    
+    -- Add an empty line after the header
+    table.insert(header_lines, '')
+    
+    -- Insert the header at the beginning of the file
+    vim.api.nvim_buf_set_lines(0, 0, 0, false, header_lines)
+end
 
-function! s:filename()
-	let l:filename = expand("%:t")
-	if strlen(l:filename) == 0
-		let l:filename = "< new >"
-	endif
-	return l:filename
-endfunction
+-- Function to update the header if it already exists
+local function update_header()
+    set_file_type()
+    
+    local lines = vim.api.nvim_buf_get_lines(0, 0, 11, false)
+    if #lines >= 9 then
+        local ninth_line = lines[9]  -- Lua tables are 1-indexed, so line 9 is at index 9
+        
+        if string.find(ninth_line, 'Updated: ') then
+            -- Update the updated line
+            lines[9] = create_header_line(9)
+            -- Update the filename line
+            lines[4] = create_header_line(4)
+            vim.api.nvim_buf_set_lines(0, 3, 4, false, {lines[4]})  -- Update line 4 (0-indexed as 3)
+            vim.api.nvim_buf_set_lines(0, 8, 9, false, {lines[9]})  -- Update line 9 (0-indexed as 8)
+            return false
+        end
+    end
+    return true
+end
 
-function! s:date()
-	return strftime("%Y/%m/%d %H:%M:%S")
-endfunction
+-- Main function to add or update header
+local function add_header()
+    if update_header() then
+        insert_header()
+    end
+end
 
-function! s:insert()
-	let l:line = 11
+-- Define the plugin setup function
+function M.setup()
+    -- Create the command
+    vim.api.nvim_create_user_command('Stdheader', function()
+        add_header()
+    end, {})
 
-	" empty line after header
-	call append(0, "")
+    -- Set up keymap for F1
+    vim.api.nvim_set_keymap('n', '<F1>', ':Stdheader<CR>', { noremap = true, silent = true })
 
-	" loop over lines
-	while l:line > 0
-		call append(0, s:line(l:line))
-		let l:line = l:line - 1
-	endwhile
-endfunction
+    -- Set up autocommand to update header on save
+    vim.api.nvim_create_autocmd('BufWritePre', {
+        pattern = '*',
+        callback = function()
+            update_header()
+        end,
+    })
+end
 
-function! s:update()
-	call s:filetype()
-	if getline(9) =~ s:start . repeat(' ', s:margin - strlen(s:start)) . "Updated: "
-		if &mod
-			call setline(9, s:line(9))
-		endif
-		call setline(4, s:line(4))
-		return 0
-	endif
-	return 1
-endfunction
-
-function! s:stdheader()
-	if s:update()
-		call s:insert()
-	endif
-endfunction
-
-" Bind command and shortcut
-command! Stdheader call s:stdheader ()
-map <F1> :Stdheader<CR>
-autocmd BufWritePre * call s:update ()
+return M

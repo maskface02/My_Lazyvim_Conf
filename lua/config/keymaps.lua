@@ -20,15 +20,10 @@ local has_words_before = function()
 end
 
 vim.keymap.set("i", "<Tab>", function()
-  if vim.fn["copilot#Accept"] ~= nil and vim.api.nvim_buf_get_option(0, "buftype") == "" then
-    -- Use the newer copilot.lua API if available
-    local ok, suggestion = pcall(require, "copilot.suggestion")
-    if ok and suggestion.is_visible() then
-      return suggestion.accept()
-    else
-      -- Fallback to the older API
-      return vim.fn["copilot#Accept"]()
-    end
+  -- Use the newer copilot.lua API if available
+  local ok, suggestion = pcall(require, "copilot.suggestion")
+  if ok and suggestion.is_visible() then
+    return suggestion.accept()
   elseif vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
     return "<Tab>"
   else

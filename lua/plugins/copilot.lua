@@ -83,7 +83,8 @@ return {
           border = 'rounded',
           title = 'Copilot Chat',
         },
-        debug = true, -- optional: helps with tracing errors
+        debug = false, -- Disable debug messages
+        silent = true, -- Make operations silent
       })
 
       -- Keymaps

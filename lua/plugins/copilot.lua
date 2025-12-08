@@ -1,65 +1,50 @@
 return {
   -- GitHub Copilot core plugin
   {
-    "github/copilot.vim",
+    "github/copilot.lua",
     config = function()
-      -- Configure Copilot to auto-start and handle authentication
-      vim.g.copilot_no_tab_map = false  -- Enable Tab mapping for Copilot
-      vim.g.copilot_assume_mapped = true
-      vim.g.copilot_tab_fallback = ""
-      
-      -- Set up autocommand to start Copilot when possible
-      vim.api.nvim_create_autocmd("BufEnter", {
-        pattern = { "*" },
-        callback = function()
-          -- Only enable Copilot for supported file types
-          if vim.bo.buftype == "" then
-            vim.defer_fn(function()
-              -- Check if gh CLI is installed
-              local handle = io.popen("command -v gh")
-              if not handle then
-                print("GitHub CLI (gh) not found. Install it first: https://cli.github.com/")
-                return
-              end
-              
-              local result = handle:read("*a"):gsub("%s+", "")
-              handle:close()
-              
-              if result == "" then
-                print("GitHub CLI (gh) not found. Install it first: https://cli.github.com/")
-                return
-              end
-              
-              -- Check Copilot status using gh copilot command
-              local copilot_handle = io.popen("gh copilot status 2>&1")
-              if copilot_handle then
-                local copilot_status = copilot_handle:read("*a")
-                copilot_handle:close()
-                
-                -- Debug: print the exact status response
-                -- print("Debug: Copilot status response: " .. copilot_status)
-                
-                -- Check if not authenticated or other issues
-                if string.find(copilot_status, "not signed in") or 
-                   string.find(copilot_status, "not logged in") or 
-                   string.find(copilot_status, "run gh auth login") or
-                   string.find(copilot_status, "exit code 1") then
-                  print("GitHub Copilot needs authentication. Run: :!gh auth login && :!gh copilot auth")
-                  print("Or run these commands in terminal: gh auth login && gh copilot auth")
-                elseif string.find(copilot_status, "enabled") then
-                  -- Copilot is ready, try starting it
-                  pcall(vim.cmd, "Copilot")
-                end
-              else
-                -- Fallback: try the original method
-                local success, result = pcall(vim.fn.system, "copilot status 2>/dev/null")
-                if success and (string.find(result, "not enabled") or string.find(result, "not logged in")) then
-                  print("GitHub Copilot needs authentication. Run: :!gh auth login && :!gh copilot auth")
-                end
-              end
-            end, 1000)
-          end
-        end,
+      require("copilot").setup({
+        panel = {
+          enabled = true,
+          auto_refresh = false,
+          keymap = {
+            jump_prev = "[[",
+            jump_next = "]]",
+            accept = "<CR>",
+            refresh = "gr",
+            open = "<M-CR>",
+          },
+          layout = {
+            position = "bottom",
+            ratio = 0.4,
+          },
+        },
+        suggestion = {
+          enabled = true,
+          auto_trigger = true,
+          debounce = 75,
+          keymap = {
+            accept = "<C-a>",
+            accept_word = false,
+            accept_line = false,
+            next = "<C-j>",
+            prev = "<C-k>",
+            dismiss = "<C-e>",
+          },
+        },
+        filetypes = {
+          yaml = false,
+          markdown = false,
+          help = false,
+          gitcommit = false,
+          gitrebase = false,
+          hgcommit = false,
+          svn = false,
+          cvs = false,
+          ["."] = false,
+        },
+        copilot_node_command = "node", -- Node.js version must be > 18.0.0
+        server_opts_overrides = {},
       })
     end,
   },

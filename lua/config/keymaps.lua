@@ -20,8 +20,15 @@ local has_words_before = function()
 end
 
 vim.keymap.set("i", "<Tab>", function()
-  if require("copilot.suggestion").is_visible() then
-    require("copilot.suggestion").accept()
+  if vim.fn["copilot#Accept"] ~= nil and vim.api.nvim_buf_get_option(0, "buftype") == "" then
+    -- Use the newer copilot.lua API if available
+    local ok, suggestion = pcall(require, "copilot.suggestion")
+    if ok and suggestion.is_visible() then
+      return suggestion.accept()
+    else
+      -- Fallback to the older API
+      return vim.fn["copilot#Accept"]()
+    end
   elseif vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
     return "<Tab>"
   elseif has_words_before() then
@@ -32,16 +39,19 @@ vim.keymap.set("i", "<Tab>", function()
 end, { expr = true, desc = "Tab completion for Copilot/LSP" })
 
 vim.keymap.set("i", "<S-Tab>", function()
-  if require("copilot.suggestion").is_visible() then
-    require("copilot.suggestion").accept_prev()
+  local ok, suggestion = pcall(require, "copilot.suggestion")
+  if ok and suggestion.is_visible() then
+    return suggestion.accept_prev()
   else
     return "<C-p>"
   end
 end, { expr = true, desc = "Previous item in Copilot/LSP completion" })
 
 vim.keymap.set("i", "<C-e>", function()
-  if require("copilot.suggestion").is_visible() then
-    require("copilot.suggestion").dismiss()
+  local ok, suggestion = pcall(require, "copilot.suggestion")
+  if ok and suggestion.is_visible() then
+    return suggestion.dismiss()
+  else
+    return "<C-e>"
   end
-  return "<C-e>"
 end, { expr = true, desc = "Dismiss Copilot suggestion" })

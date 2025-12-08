@@ -1,7 +1,7 @@
 return {
   -- GitHub Copilot core plugin
   {
-    "github/copilot.lua",
+    "zbirenbaum/copilot.lua",
     config = function()
       require("copilot").setup({
         panel = {

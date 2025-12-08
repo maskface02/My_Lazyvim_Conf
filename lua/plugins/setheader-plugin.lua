@@ -1,7 +1,4 @@
 return {
-  'setheader',
-  event = 'VeryLazy',
-  config = function()
-    require('plugins.Setheader').setup()
-  end,
+  -- Disable any external setheader plugin that might try to install
+  { "setheader", enabled = false },
 }

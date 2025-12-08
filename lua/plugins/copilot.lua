@@ -94,4 +94,18 @@ return {
       end, { desc = "Correct with Copilot" })
     end,
   },
+
+  -- Integration with blink.cmp completion plugin
+  {
+    "saghen/blink.cmp",
+    opts = {
+      sources = {
+        -- Ensure copilot source is properly configured
+        lsp = { enabled = true },
+        path = { enabled = true },
+        buffer = { enabled = true },
+        copilot = { enabled = true },
+      },
+    },
+  },
 }

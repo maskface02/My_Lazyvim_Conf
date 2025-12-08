@@ -9,17 +9,53 @@ return {
       vim.g.copilot_tab_fallback = ""
       
       -- Set up autocommand to start Copilot when possible
-      vim.api.nvim_create_autocmd("FileType", {
+      vim.api.nvim_create_autocmd("BufEnter", {
         pattern = { "*" },
         callback = function()
           -- Only enable Copilot for supported file types
           if vim.bo.buftype == "" then
             vim.defer_fn(function()
-              -- Attempt to start Copilot if not already running
-              local copilot_status = vim.fn.system("copilot status 2>/dev/null")
-              if string.find(copilot_status, "not enabled") or string.find(copilot_status, "not logged in") then
-                -- Copilot needs authentication
-                print("GitHub Copilot needs authentication. Run: gh auth login && gh copilot auth")
+              -- Check if gh CLI is installed
+              local handle = io.popen("command -v gh")
+              if not handle then
+                print("GitHub CLI (gh) not found. Install it first: https://cli.github.com/")
+                return
+              end
+              
+              local result = handle:read("*a"):gsub("%s+", "")
+              handle:close()
+              
+              if result == "" then
+                print("GitHub CLI (gh) not found. Install it first: https://cli.github.com/")
+                return
+              end
+              
+              -- Check Copilot status using gh copilot command
+              local copilot_handle = io.popen("gh copilot status 2>&1")
+              if copilot_handle then
+                local copilot_status = copilot_handle:read("*a")
+                copilot_handle:close()
+                
+                -- Debug: print the exact status response
+                -- print("Debug: Copilot status response: " .. copilot_status)
+                
+                -- Check if not authenticated or other issues
+                if string.find(copilot_status, "not signed in") or 
+                   string.find(copilot_status, "not logged in") or 
+                   string.find(copilot_status, "run gh auth login") or
+                   string.find(copilot_status, "exit code 1") then
+                  print("GitHub Copilot needs authentication. Run: :!gh auth login && :!gh copilot auth")
+                  print("Or run these commands in terminal: gh auth login && gh copilot auth")
+                elseif string.find(copilot_status, "enabled") then
+                  -- Copilot is ready, try starting it
+                  pcall(vim.cmd, "Copilot")
+                end
+              else
+                -- Fallback: try the original method
+                local success, result = pcall(vim.fn.system, "copilot status 2>/dev/null")
+                if success and (string.find(result, "not enabled") or string.find(result, "not logged in")) then
+                  print("GitHub Copilot needs authentication. Run: :!gh auth login && :!gh copilot auth")
+                end
               end
             end, 1000)
           end
@@ -40,7 +76,10 @@ return {
       -- Setup CopilotChat with tab layout for chat window
       require("CopilotChat").setup({
         window = {
-          layout = "tab", -- Changed to "tab" to open in a new tab instead of floating window
+          layout = 'replace', -- Use 'replace' layout to open in a new buffer (similar to a tab)
+          width = 0.5,        -- 50% of screen width
+          height = 0.8,       -- 80% of screen height
+          border = 'rounded',
         },
         debug = true, -- optional: helps with tracing errors
       })
@@ -48,7 +87,7 @@ return {
       -- Keymaps
       vim.keymap.set("n", "<leader>cc", function()
         require("CopilotChat").open()
-      end, { desc = "Open Copilot Chat in new tab" })
+      end, { desc = "Open Copilot Chat in new buffer" })
 
       vim.keymap.set("v", "<leader>cx", function()
         require("CopilotChat").explain()

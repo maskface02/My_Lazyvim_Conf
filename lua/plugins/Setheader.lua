@@ -197,7 +197,7 @@ end
 function M.setup()
     -- Create the command
     vim.api.nvim_create_user_command('Stdheader', function()
-        add_header()
+        M.add_header()
     end, {})
 
     -- Set up keymap for F1
@@ -207,9 +207,37 @@ function M.setup()
     vim.api.nvim_create_autocmd('BufWritePre', {
         pattern = '*',
         callback = function()
-            update_header()
+            M.update_header()
         end,
     })
+end
+
+-- Expose the add_header function
+function M.add_header()
+    if update_header() then
+        insert_header()
+    end
+end
+
+-- Expose the update_header function
+function M.update_header()
+    set_file_type()
+    
+    local lines = vim.api.nvim_buf_get_lines(0, 0, 11, false)
+    if #lines >= 9 then
+        local ninth_line = lines[9]  -- Lua tables are 1-indexed, so line 9 is at index 9
+        
+        if string.find(ninth_line, 'Updated: ') then
+            -- Update the updated line
+            lines[9] = create_header_line(9)
+            -- Update the filename line
+            lines[4] = create_header_line(4)
+            vim.api.nvim_buf_set_lines(0, 3, 4, false, {lines[4]})  -- Update line 4 (0-indexed as 3)
+            vim.api.nvim_buf_set_lines(0, 8, 9, false, {lines[9]})  -- Update line 9 (0-indexed as 8)
+            return false
+        end
+    end
+    return true
 end
 
 return M

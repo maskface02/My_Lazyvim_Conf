@@ -16,5 +16,3 @@ vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
   end,
 })
 
--- Set up the 42 header plugin functionality
-require('plugins.Setheader').setup()
